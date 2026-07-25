@@ -77,13 +77,7 @@ USER_AGENT = (
 
 REST_SUFFIX = "?f=pjson"
 
-COUNT_QUERY = (
-    "/query?"
-    "where=1%3D1"
-    "&returnCountOnly=true"
-    "&f=json"
-)
-
+COUNT_QUERY = "/query?where=1%3D1&returnCountOnly=true&f=pjson"
 # ---------------------------------------------------------------------
 # Status values
 # ---------------------------------------------------------------------

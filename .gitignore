@@ -1,12 +1,15 @@
 venv/
+airflow_venv/
 __pycache__/
 *.pyc
 
-output/
 logs/
+output/
 screenshots/
 
-input.xlsx
-validated.xlsx
+*.db
+
+.env
+.env.*
 
 .vscode/

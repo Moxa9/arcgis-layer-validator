@@ -4,16 +4,12 @@ validate.py
 Main entry point for the ArcGIS Validator.
 """
 
-from pathlib import Path
-
 from browser import BrowserManager
-from config import (
-    SAVE_EVERY,
-    SCREENSHOT_DIR,
-)
+from config import SAVE_EVERY, SCREENSHOT_DIR
 from excel_handler import ExcelHandler
 from logger import logger
 from validator import ArcGISValidator
+from s3_upload import upload_file
 
 
 def main():
@@ -26,7 +22,6 @@ def main():
     browser.start()
 
     excel = ExcelHandler()
-
     validator = ArcGISValidator(browser)
 
     processed = 0
@@ -47,24 +42,29 @@ def main():
             processed += 1
 
             logger.info(
-    f"Row {row} | {result.status} | {result.error}"
-)
-            
+                f"Row {row} | {result.status} | {result.error}"
+            )
 
             if processed % SAVE_EVERY == 0:
-
                 excel.save()
-
                 logger.info(
                     f"Checkpoint saved after {processed} rows."
                 )
 
+        # Final save
         excel.save()
-
         logger.info("Validation completed successfully.")
 
-    finally:
+        # Upload reports to AWS S3
+        try:
+            upload_file("output/validated.xlsx")
+            upload_file("logs/validator.log")
+            logger.info("Reports uploaded to AWS S3 successfully.")
 
+        except Exception as e:
+            logger.error(f"S3 upload failed: {e}")
+
+    finally:
         browser.close()
 
 

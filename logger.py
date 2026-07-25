@@ -19,6 +19,7 @@ except ImportError:
 
 def get_logger(name: str = "ArcGISValidator") -> logging.Logger:
     """Create and return a configured logger."""
+    
 
     logger = logging.getLogger(name)
 
@@ -55,7 +56,7 @@ def get_logger(name: str = "ArcGISValidator") -> logging.Logger:
         )
     else:
         console_formatter = logging.Formatter(
-            "%(levelname)-8s %(message)s"
+            "%(levelname)-8s%(message)s"
         )
 
     console_handler.setFormatter(console_formatter)
