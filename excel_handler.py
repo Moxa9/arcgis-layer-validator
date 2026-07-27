@@ -4,6 +4,8 @@ excel_handler.py
 Reads the Layer_Servers sheet and writes validation results.
 """
 
+from pathlib import Path
+
 from openpyxl import load_workbook
 
 from config import INPUT_EXCEL, OUTPUT_EXCEL
@@ -21,7 +23,14 @@ class ExcelHandler:
     ]
 
     def __init__(self):
-        self.workbook = load_workbook(INPUT_EXCEL)
+
+        # Resume from previous output if it exists
+        if Path(OUTPUT_EXCEL).exists():
+            self.workbook = load_workbook(OUTPUT_EXCEL)
+            logger.info(f"Resuming validation from {OUTPUT_EXCEL}")
+        else:
+            self.workbook = load_workbook(INPUT_EXCEL)
+            logger.info(f"Starting validation using {INPUT_EXCEL}")
 
         # Always use the Layer_Servers sheet
         self.sheet = self.workbook["Layer_Servers"]
@@ -73,9 +82,20 @@ class ExcelHandler:
                 start_col += 1
 
     def iter_rows(self):
-        """Yield (row_number, arcgis_link)."""
+        """Yield only rows that have not yet been validated."""
+
+        status_col = self.output_columns["Status"]
 
         for row in range(2, self.sheet.max_row + 1):
+
+            # Skip rows already processed
+            status = self.sheet.cell(
+                row=row,
+                column=status_col,
+            ).value
+
+            if status is not None and str(status).strip():
+                continue
 
             url = self.sheet.cell(
                 row=row,

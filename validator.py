@@ -90,6 +90,7 @@ class ArcGISValidator:
         response.raise_for_status()
 
         return response.json(), response.status_code
+    
     def validate_rest(self, rest_url: str) -> ValidationResult:
         """
      Validate the ArcGIS REST service.
@@ -181,10 +182,11 @@ class ArcGISValidator:
 
         try:
             page.goto(
-            mapviewer_url,
-            timeout=PAGE_TIMEOUT,
-            wait_until="networkidle",
-        )
+    mapviewer_url,
+    timeout=PAGE_TIMEOUT,
+    wait_until="domcontentloaded",
+)
+        
 
             page.wait_for_timeout(WAIT_AFTER_LOAD)
 
@@ -194,10 +196,13 @@ class ArcGISValidator:
                 if pattern.lower() in page_text.lower():
 
                     if screenshot_path:
-                       page.screenshot(
-                        path=screenshot_path,
-                        full_page=True,
-                    )
+                        try:
+                            page.screenshot(
+                                path=screenshot_path,
+                                full_page=False,
+                                    timeout=10000,)
+                        except Exception as e:
+                            logger.warning(f"Screenshot failed: {e}")
 
                     status = STATUS_UNSUPPORTED
 
@@ -217,10 +222,14 @@ class ArcGISValidator:
         except PlaywrightTimeoutError:
 
             if screenshot_path:
-                page.screenshot(
-                path=screenshot_path,
-                full_page=True,
-            )
+                try:
+                    page.screenshot(
+                    path=screenshot_path,
+                    full_page=False,
+                    timeout=10000,
+    )
+                except Exception as e:
+                    logger.warning(f"Screenshot failed: {e}")
 
             return ValidationResult(
             status=STATUS_TIMEOUT,
@@ -231,11 +240,14 @@ class ArcGISValidator:
         except Exception as exc:
 
             if screenshot_path:
-                page.screenshot(
-                path=screenshot_path,
-                full_page=True,
-            )
-
+                try:
+                    page.screenshot(
+        path=screenshot_path,
+        full_page=False,
+        timeout=10000,
+    )
+                except Exception as e:
+                    logger.warning(f"Screenshot failed: {e}")
             return ValidationResult(
             status=STATUS_UNKNOWN,
             error=str(exc),

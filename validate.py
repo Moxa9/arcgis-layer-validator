@@ -39,6 +39,9 @@ def main():
 
             excel.write_result(row, result)
 
+            # Save after every row so progress is never lost
+            excel.save()
+
             processed += 1
 
             logger.info(
@@ -46,13 +49,10 @@ def main():
             )
 
             if processed % SAVE_EVERY == 0:
-                excel.save()
                 logger.info(
-                    f"Checkpoint saved after {processed} rows."
+                    f"Checkpoint reached after {processed} rows."
                 )
 
-        # Final save
-        excel.save()
         logger.info("Validation completed successfully.")
 
         # Upload reports to AWS S3
