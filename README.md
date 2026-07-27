@@ -1,38 +1,64 @@
-# ArcGIS Layer Validator
+# ArcGIS Layer Validation Automation Tool
 
-A Python-based automation tool that validates ArcGIS Map Viewer links in bulk.
+## Overview
 
-The validator reads ArcGIS Map Viewer URLs from an Excel workbook, validates the underlying ArcGIS REST service, checks whether the layer loads successfully, and generates an annotated Excel report with validation results.
+The **ArcGIS Layer Validation Automation Tool** is an end-to-end automation solution that validates ArcGIS Map Viewer links at scale. The tool extracts ArcGIS REST service URLs, validates service availability, checks the corresponding Map Viewer UI using Playwright, captures feature counts, generates Excel reports, stores results in SQLite, and uploads reports to AWS S3.
+
+Designed to process thousands of records efficiently, the validator also supports automatic resume capability, allowing interrupted runs to continue from the last successfully processed record.
 
 ---
 
 ## Features
 
-- Validate thousands of ArcGIS Map Viewer links automatically
-- Extract ArcGIS REST service URLs from Map Viewer links
-- Verify ArcGIS REST endpoints
-- Detect unavailable or broken services
-- Detect authentication-required services
-- Identify empty layers
-- Capture screenshots for failed validations
-- Export validation results to Excel
-- Generate logs for troubleshooting
+- Validate 7,800+ ArcGIS Map Viewer links
+- ArcGIS REST API validation
+- Playwright UI validation
+- HTTP status verification
+- Feature count extraction
+- Automatic detection of broken and unsupported layers
+- Authentication error detection
+- Screenshot capture for failed validations
+- Automatic resume after interruption
+- Excel report generation
+- SQLite database storage
+- AWS S3 report upload
+- Detailed logging
+
+---
+
+## Tech Stack
+
+| Category | Technologies |
+|----------|--------------|
+| Language | Python |
+| Browser Automation | Playwright |
+| API | ArcGIS REST API |
+| HTTP Requests | Requests |
+| Excel Processing | OpenPyXL |
+| Database | SQLite, SQLAlchemy |
+| Cloud Storage | AWS S3, Boto3 |
+| Logging | Python Logging |
 
 ---
 
 ## Project Structure
 
 ```text
-validator/
+arcgis-layer-validator/
 │
-├── browser.py
-├── config.py
-├── excel_handler.py
-├── logger.py
-├── validator.py
-├── validate.py
+├── browser.py              # Playwright browser manager
+├── config.py               # Configuration settings
+├── db_loader.py            # SQLite loader
+├── excel_handler.py        # Excel read/write operations
+├── logger.py               # Logging configuration
+├── s3_upload.py            # AWS S3 upload
+├── validate.py             # Main application
+├── validator.py            # Validation logic
+├── requirements.txt
+├── README.md
 │
-├── input.xlsx
+├── input/
+│   └── input.xlsx
 │
 ├── output/
 │   └── validated.xlsx
@@ -40,11 +66,9 @@ validator/
 ├── screenshots/
 │
 ├── logs/
+│   └── validator.log
 │
-├── reports/
-│
-├── requirements.txt
-└── README.md
+└── arcgis_validation.db
 ```
 
 ---
@@ -52,144 +76,104 @@ validator/
 ## Validation Workflow
 
 ```text
-Excel Workbook
-        │
-        ▼
-Read ArcGIS MapViewer URL
-        │
-        ▼
+Input Excel
+      │
+      ▼
 Extract ArcGIS REST URL
-        │
-        ▼
-Validate REST Service
-        │
-        ▼
-Open ArcGIS Map Viewer
-        │
-        ▼
-Check for UI Errors
-        │
-        ▼
-Write Results to Excel
+      │
+      ▼
+REST API Validation
+      │
+      ▼
+Playwright UI Validation
+      │
+      ▼
+Generate Validation Report
+      │
+      ├────────► SQLite Database
+      │
+      └────────► AWS S3 Upload
 ```
 
 ---
 
-## Validation Status
+## Installation
 
-The validator classifies each URL into one of the following categories:
+### Clone the repository
 
-| Status | Description |
-|---------|-------------|
-| Working | Layer loaded successfully |
-| Empty Layer | Layer exists but contains no features |
-| Broken Service | REST service unavailable |
-| Authentication Required | Layer requires login/token |
-| Unsupported Layer | Layer type not supported |
-| HTTP Error | HTTP request failed |
-| Timeout | Request exceeded timeout |
-| Unknown Error | Unexpected validation error |
+```bash
+git clone https://github.com/<your-github-username>/arcgis-layer-validator.git
+cd arcgis-layer-validator
+```
 
----
+### Create a virtual environment
 
-## Requirements
+```bash
+python -m venv venv
+```
 
-- Python 3.11+
-- Playwright
-- Chromium Browser
+### Activate the virtual environment
 
-Install dependencies:
+**Windows**
+
+```bash
+venv\Scripts\activate
+```
+
+### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Install Playwright browser:
-
-```bash
-playwright install chromium
-```
-
 ---
 
-## Input
-
-The validator expects an Excel workbook named:
-
-```text
-input.xlsx
-```
-
-The workbook must contain a worksheet named:
-
-```text
-Layer_Servers
-```
-
-The worksheet should include an `arcgis_link` column containing ArcGIS Map Viewer URLs.
-
-Example:
-
-```
-https://www.arcgis.com/apps/mapviewer/index.html?url=https://server/rest/services/Layer/MapServer/0
-```
-
----
-
-## Run
+## Running the Project
 
 ```bash
-py validate.py
+python validate.py
 ```
 
 ---
 
 ## Output
 
-After execution the validator generates:
+The validator generates:
 
-```text
-output/
-    validated.xlsx
-```
-
-Additional folders:
-
-```text
-screenshots/
-```
-
-Contains screenshots of failed validations.
-
-```text
-logs/
-```
-
-Contains execution logs.
+- ✅ Excel validation report
+- ✅ HTTP status codes
+- ✅ Feature counts
+- ✅ Screenshot evidence for failed validations
+- ✅ Validation logs
+- ✅ SQLite database
+- ✅ AWS S3 uploads
 
 ---
 
-## Technologies Used
+## Key Highlights
 
-- Python
-- Playwright
-- Requests
-- OpenPyXL
-- ArcGIS REST API
-
----
-
-## Future Improvements
-
-- Parallel browser workers
-- Resume interrupted executions
-- Progress bar with ETA
-- Validation summary report
-- Duplicate URL caching
-- Multi-sheet workbook support
+- Processed over **7,800 ArcGIS Map Viewer links**
+- Automatic resume support for interrupted executions
+- Robust error handling for REST and UI validation
+- Cloud integration using AWS S3
+- Structured logging and reporting
+- Designed for future orchestration using Apache Airflow
 
 ---
 
-## License
+## Future Enhancements
 
-MIT License
+- Apache Airflow scheduling
+- Parallel validation
+- Email notifications
+- Interactive dashboard
+- Retry mechanism for failed validations
+- Validation metrics dashboard
+
+---
+
+## Author
+
+**Moksha Rathod**
+
+GitHub: https://github.com/Moxa9
